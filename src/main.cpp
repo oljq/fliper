@@ -8,11 +8,12 @@ const int taster2=19;
 const int taster3=23;
 bool saveIR= false;
 bool sendIR=false;
+bool moveRight=false;
+bool moveLeft=false;
 
 void setup() {
   Serial.begin(9600);
-  delay(1000);  
-  Serial.println("BOOT");
+  randomSeed(analogRead(A0));
 
   pinMode(taster1, INPUT_PULLUP);
   pinMode(taster2, INPUT_PULLUP);
@@ -27,6 +28,7 @@ void setup() {
 }
 
 void loop() {
+  Serial.println("hello");
   if(e.firstScreen){
     e.pocetni();
     if(digitalRead(taster1)==LOW){
@@ -41,24 +43,25 @@ void loop() {
     
     if(digitalRead(taster1)==LOW){
       delay(150);
+      Serial.println("Taster1");
 
-      if (e.currentScreen == SCREEN_MAIN_MENU) {
-        selectedIndex++;
-      }else if(e.currentScreen== SCREEN_IR_RECEIVER){
-        saveIR=true;
-      }else if(e.currentScreen== SCREEN_IR_EMISSION){
-        selectedIndex2++;
-      }
+      if (e.currentScreen == SCREEN_MAIN_MENU) selectedIndex++;
+      else if(e.currentScreen == SCREEN_IR_RECEIVER)saveIR=true;
+      else if(e.currentScreen == SCREEN_IR_EMISSION) selectedIndex2++;
+      else if(e.currentScreen == SCREEN_GAME)moveRight=true;
+  
     }
 
     if(digitalRead(taster2)==LOW){   
       delay(150);
+      Serial.println("Taster2");
       if(e.currentScreen == SCREEN_MAIN_MENU){
       
         switch (selectedIndex % e.ListMainMenu.size()) {
           case 0: e.currentScreen = SCREEN_IR_RECEIVER; break;
           case 1: e.currentScreen = SCREEN_IR_EMISSION; break;
-          case 2: e.firstScreen = true; break;
+          case 2: e.currentScreen = SCREEN_GAME; break;
+          case 3: e.firstScreen = true; break;
           
           
         }
@@ -70,12 +73,17 @@ void loop() {
 
     if(digitalRead(taster3)==LOW){
       delay(150);
-      sendIR=true;
+
+      if(e.currentScreen == SCREEN_IR_EMISSION)sendIR=true;
+      else if(e.currentScreen == SCREEN_GAME) moveLeft=true;
+
     }
 
-    e.DrawMeni(e.currentScreen, selectedIndex, saveIR, selectedIndex2, sendIR);
+    e.DrawMeni(e.currentScreen, selectedIndex, saveIR, selectedIndex2, sendIR, moveRight, moveLeft);
     saveIR=false;
     sendIR=false;
+    moveRight=false;
+    moveLeft=false;
     
   }
 

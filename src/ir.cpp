@@ -11,11 +11,19 @@ void Ir::begin(){
     irsend.begin();
 
     File file = LittleFS.open("/ir_codes.txt", FILE_READ);
-    file.seek(0);
     
-    while(file.available()){
-        file.readStringUntil('\n');
-        Ir::numberOfLines++;
+    if(!file){
+        Serial.println("IR codes file not found!");
+        return;
+    }
+
+    numberOfLines=0;
+
+    while(true){
+        String line = file.readStringUntil('\n');
+        line.trim(); 
+        if(line.length() > 0) numberOfLines++; 
+        if(file.available() == 0) break; 
     }
 
     file.close();
@@ -31,14 +39,32 @@ long Ir::read() {
 }
 
 void Ir::save(unsigned long value){
-    File file=LittleFS.open("/ir_codes.txt", FILE_APPEND);
+    bool exists = false;
+    File fileread=LittleFS.open("/ir_codes.txt", FILE_READ);
 
-    if(!file){
-        Serial.println("Failed to open file");
-        return;
+    if(fileread){
+
+        while(fileread.available()){
+            String line = fileread.readStringUntil('\n');
+            line.trim(); // uklanja \r\n
+                if(line == String(value)){
+                    exists = true;
+                    break;
+                }
+        }
+
+        fileread.close();
     }
-    file.println(value); 
-    file.close();
+
+    if(!exists){
+        File file = LittleFS.open("/ir_codes.txt", FILE_APPEND);
+        if(!file){
+            Serial.println("Failed to open file for appending");
+            return;
+        }
+        file.println(value);
+        file.close();
+    }
 
 }
 

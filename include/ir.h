@@ -15,7 +15,7 @@ private:
     decode_results results;
 
 public:
-    int numberOfLines=0;
+    int numberOfLines;
     Ir(uint8_t recvPin, uint8_t sendPin);
     void begin();
 

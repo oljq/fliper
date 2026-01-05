@@ -27,7 +27,8 @@ extern Adafruit_SSD1306 display;
 enum ScreenState {
     SCREEN_MAIN_MENU,
     SCREEN_IR_RECEIVER,
-    SCREEN_IR_EMISSION
+    SCREEN_IR_EMISSION,
+    SCREEN_GAME
 };
 
 
@@ -37,15 +38,22 @@ ScreenState currentScreen = SCREEN_MAIN_MENU;
 static const byte frameCount;
 static bool firstScreen;
 std::vector <String> ListMainMenu;
+int playerX = 50;
+int playerY = 50;
+int obstacleX = 30;
+int obstacleY = 12;
+double score=0;
 
   Ekran();
   void begin();
   void pocetni();
   void brisi();
-  void DrawMeni(ScreenState currentScreen, int s, bool saveIR, int index,bool sendIR);
+  void DrawMeni(ScreenState currentScreen, int s, bool saveIR, int index,bool sendIR, bool moveRight, bool moveLeft);
   void MainMeni(int s);
   void IrReciver(bool save);
   void IrEmission(int index, bool send);
+  void Game(bool moveRight, bool moveLeft);
+  bool checkCollision(int px, int py, int pw, int ph, int ox, int oy, int ow, int oh);
 
 private:
     int frame=0;

@@ -38,6 +38,7 @@ const byte PROGMEM frames[][288] = {
 Ekran::Ekran(): ir(IR_RECV_PIN, IR_SEND_PIN){
     ListMainMenu.push_back("Ir receiver");
     ListMainMenu.push_back("Ir emission");
+    ListMainMenu.push_back("Game");
     ListMainMenu.push_back("Back to home screen");
 }
 
@@ -66,7 +67,7 @@ void Ekran::brisi(){
     display.display();
 }
 
-void Ekran::DrawMeni(ScreenState currentScreen, int s, bool save, int index,bool send){
+void Ekran::DrawMeni(ScreenState currentScreen, int s, bool save, int index,bool send, bool moveRight, bool moveLeft){
 
     switch(currentScreen){
         case SCREEN_MAIN_MENU:
@@ -79,6 +80,10 @@ void Ekran::DrawMeni(ScreenState currentScreen, int s, bool save, int index,bool
 
         case SCREEN_IR_EMISSION:
             IrEmission(index,send);
+            break;
+
+        case SCREEN_GAME:
+            Game(moveRight, moveLeft);
             break;
     }
 
@@ -160,7 +165,9 @@ void Ekran::IrEmission(int index ,bool  send){
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);
     display.setCursor(0, 0);
-    display.println("Ir send");
+    display.print("Ir send");
+    display.setCursor(100, 0);
+    display.println(ir.numberOfLines);
     display.println(" ");
 
     display.setTextSize(1);
@@ -212,6 +219,65 @@ void Ekran::IrEmission(int index ,bool  send){
     file.close();
     display.display();
     
+}
+
+void Ekran::Game(bool moveRight, bool moveLeft){
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);
+    display.setCursor(0, 0);
+    display.print("Score:");
+    display.setCursor(100,0);
+    display.println(score,0);
+    display.drawLine(0, 10, 127, 10, SSD1306_WHITE);
+    score+=0.1;
+
+
+    if(moveRight) playerX+=2;
+    if(moveLeft) playerX-=2;
+
+    if (playerX < 0) playerX = 0;
+    if (playerX > 118) playerX = 118;
+
+    display.drawRect(playerX,playerY,10,10, SSD1306_WHITE);
+
+    if(score > 50) obstacleY += 3;
+    else if(score > 20) obstacleY += 2;
+    else obstacleY += 1;
+
+
+    if(obstacleY>64){
+        obstacleY=12;
+        obstacleX= random(0,118);
+    }
+
+    display.drawChar(obstacleX, obstacleY, '*', SSD1306_WHITE, SSD1306_BLACK, 1);
+
+    if(checkCollision(playerX, playerY, 10,10,obstacleX, obstacleY,5,7)){
+        display.clearDisplay();
+        display.setTextSize(2);
+        display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);
+        display.setCursor(10, 30);
+        display.print("Game over");
+        display.display(); 
+        delay(3000);
+        currentScreen= SCREEN_MAIN_MENU;
+        obstacleY=12;
+        obstacleX=30;
+        score=0;
+        return;
+    }
+    
+    display.display();
+
+}
+
+bool Ekran::checkCollision(int px, int py, int pw, int ph, int ox, int oy, int ow, int oh){
+    return !(px + pw < ox ||     // player levo od prepreke
+             px > ox + ow ||     // player desno od prepreke
+             py + ph < oy ||     // player iznad prepreke
+             py > oy + oh); 
+
 }
 
 
