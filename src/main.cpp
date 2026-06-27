@@ -1,10 +1,14 @@
 #include "ekran.h"
+#include "espWiFi.h"
+#include "ble.h"
 
 Ekran e;
+EspWiFi ewifi;
+Ble ble;
 int selectedIndex=0;
 int selectedIndex2=0;
-const int taster1=18;
-const int taster2=19;
+const int taster1=19;
+const int taster2=18;
 const int taster3=23;
 bool saveIR= false;
 bool sendIR=false;
@@ -19,16 +23,11 @@ void setup() {
   pinMode(taster2, INPUT_PULLUP);
   pinMode(taster3, INPUT_PULLUP);
   e.begin(); 
-
-  if (!LittleFS.begin()) {
-    Serial.println("LittleFS mount FAILED");
-  } else {
-    Serial.println("LittleFS mounted OK");
-  }
+  ewifi.begin();
+  ble.begin();
 }
 
 void loop() {
-  Serial.println("hello");
   if(e.firstScreen){
     e.pocetni();
     if(digitalRead(taster1)==LOW){
@@ -43,7 +42,6 @@ void loop() {
     
     if(digitalRead(taster1)==LOW){
       delay(150);
-      Serial.println("Taster1");
 
       if (e.currentScreen == SCREEN_MAIN_MENU) selectedIndex++;
       else if(e.currentScreen == SCREEN_IR_RECEIVER)saveIR=true;
@@ -54,16 +52,16 @@ void loop() {
 
     if(digitalRead(taster2)==LOW){   
       delay(150);
-      Serial.println("Taster2");
       if(e.currentScreen == SCREEN_MAIN_MENU){
       
         switch (selectedIndex % e.ListMainMenu.size()) {
           case 0: e.currentScreen = SCREEN_IR_RECEIVER; break;
           case 1: e.currentScreen = SCREEN_IR_EMISSION; break;
-          case 2: e.currentScreen = SCREEN_GAME; break;
-          case 3: e.firstScreen = true; break;
-          
-          
+          case 2: e.currentScreen = SCREEN_WIFI; break;
+          case 3: e.currentScreen = SCREEN_BLE; break;
+          case 4: e.currentScreen = SCREEN_GAME; break;
+          case 5: e.firstScreen = true; break;
+                    
         }
 
       }

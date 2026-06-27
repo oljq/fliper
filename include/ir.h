@@ -1,3 +1,5 @@
+/*
+
 #ifndef IR_H
 #define IR_H
 
@@ -7,6 +9,7 @@
 #include <IRsend.h>
 #include <IRutils.h>
 #include <LittleFS.h>
+
 
 class Ir {
 private:
@@ -26,3 +29,4 @@ public:
 };
 
 #endif
+*/

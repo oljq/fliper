@@ -9,7 +9,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "ir.h"
+#include "espWiFi.h"
+#include "ble.h"
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -28,21 +29,23 @@ enum ScreenState {
     SCREEN_MAIN_MENU,
     SCREEN_IR_RECEIVER,
     SCREEN_IR_EMISSION,
+    SCREEN_WIFI,
+    SCREEN_BLE,
     SCREEN_GAME
 };
 
 
 class Ekran{
 public:
-ScreenState currentScreen = SCREEN_MAIN_MENU;
-static const byte frameCount;
-static bool firstScreen;
-std::vector <String> ListMainMenu;
-int playerX = 50;
-int playerY = 50;
-int obstacleX = 30;
-int obstacleY = 12;
-double score=0;
+  ScreenState currentScreen = SCREEN_MAIN_MENU;
+  static const byte frameCount;
+  static bool firstScreen;
+  std::vector <String> ListMainMenu;
+  int playerX = 50;
+  int playerY = 50;
+  int obstacleX = 30;
+  int obstacleY = 12;
+  double score=0;
 
   Ekran();
   void begin();
@@ -52,12 +55,15 @@ double score=0;
   void MainMeni(int s);
   void IrReciver(bool save);
   void IrEmission(int index, bool send);
+  void Network();
+  void BleScan();
   void Game(bool moveRight, bool moveLeft);
   bool checkCollision(int px, int py, int pw, int ph, int ox, int oy, int ow, int oh);
 
 private:
     int frame=0;
-    Ir ir;
+    EspWiFi eWiFi;
+    Ble eBle;
     unsigned long lastIrRead=0;
 
 };

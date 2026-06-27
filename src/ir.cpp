@@ -1,3 +1,4 @@
+/*
 #include "ir.h"
 
 
@@ -72,3 +73,5 @@ void Ir::send(uint32_t code){
     irsend.sendNEC(code, 32);
     Serial.println("Poslato");
 }
+
+*/

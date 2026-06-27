@@ -35,20 +35,28 @@ const byte PROGMEM frames[][288] = {
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,224,0,0,0,0,15,240,0,0,0,0,24,28,0,0,0,0,48,12,0,0,0,0,96,6,0,0,0,0,192,3,0,0,0,0,192,3,128,0,0,1,128,1,128,0,0,1,128,1,192,0,0,3,0,0,192,0,0,255,0,0,254,0,3,254,0,0,127,192,14,0,0,0,0,240,28,0,0,0,0,56,24,0,0,0,0,24,48,0,1,128,0,12,48,0,1,128,0,12,96,0,1,128,0,6,96,0,1,128,0,6,96,0,1,128,0,4,48,0,121,158,0,12,48,0,125,254,0,12,48,0,15,248,0,28,24,0,1,128,0,24,12,0,3,192,0,48,14,0,6,96,0,96,7,0,14,112,0,192,3,128,28,56,1,128,0,192,8,16,3,0,0,192,0,0,3,0,1,128,0,0,1,128,1,128,0,0,1,128,1,128,0,0,1,128,1,128,0,0,1,128,1,128,0,0,1,128,1,128,0,0,1,128,1,128,0,0,1,128,1,128,0,0,1,128,0,192,1,128,1,128,0,192,3,192,3,0,0,96,15,240,7,0,0,112,62,63,14,0,0,63,248,15,252,0,0,15,192,1,224,0,0,0,0,0,0,0,0,0,0,0,0,0}
 };
 
-Ekran::Ekran(): ir(IR_RECV_PIN, IR_SEND_PIN){
+Ekran::Ekran() /* :ir(IR_RECV_PIN, IR_SEND_PIN)*/{
     ListMainMenu.push_back("Ir receiver");
     ListMainMenu.push_back("Ir emission");
+    ListMainMenu.push_back("Wifi scane");
+    ListMainMenu.push_back("BLE");
     ListMainMenu.push_back("Game");
     ListMainMenu.push_back("Back to home screen");
 }
 
 void Ekran::begin() {
-    Wire.begin(21, 22);
+    Wire.begin(21, 22);//sck-22, sda 21
 
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {       
         while (true);
     }
-    ir.begin();
+    //ir.begin();
+    eWiFi.begin();
+    eWiFi.scanNetwork();
+
+    eBle.begin();
+    eBle.scan(3);
+    
 
     display.clearDisplay();
     display.display();
@@ -82,6 +90,14 @@ void Ekran::DrawMeni(ScreenState currentScreen, int s, bool save, int index,bool
             IrEmission(index,send);
             break;
 
+        case SCREEN_WIFI:
+            Network();
+            break;
+
+        case SCREEN_BLE:
+            BleScan();
+            break;
+
         case SCREEN_GAME:
             Game(moveRight, moveLeft);
             break;
@@ -103,24 +119,39 @@ void Ekran::MainMeni(int s){
     display.println(" ");
     y+=20;
 
-    for(int i=0; i<ListMainMenu.size(); i++){       
-        if(i==s){
-            display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
-        }else{
-            display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);          
-        } 
-        display.setTextSize(1);
-        display.setCursor(5,y);
-        display.println(ListMainMenu[i]);
-        y+=10;
+    if(s<4){
+        for(int i=0; i<ListMainMenu.size(); i++){       
+            if(i==s){
+                display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+            }else{
+                display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);          
+            } 
+            display.setTextSize(1);
+            display.setCursor(5,y);
+            display.println(ListMainMenu[i]);
+            y+=10;
 
-    }
-    
+        }
+    }else{
+        for(int i=3; i<ListMainMenu.size(); i++){       
+            if(i==s){
+                display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+            }else{
+                display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);          
+            } 
+            display.setTextSize(1);
+            display.setCursor(5,y);
+            display.println(ListMainMenu[i]);
+            y+=10;
+
+        }
+    }  
     display.display();
 
 }
 
 void Ekran::IrReciver(bool save){
+    /*
     display.clearDisplay();
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);
@@ -156,9 +187,11 @@ void Ekran::IrReciver(bool save){
 
     display.display();
     delay(200);
+    */
 }
 
 void Ekran::IrEmission(int index ,bool  send){
+    /*
     File file = LittleFS.open("/ir_codes.txt", FILE_READ);
 
     display.clearDisplay();
@@ -218,8 +251,67 @@ void Ekran::IrEmission(int index ,bool  send){
 
     file.close();
     display.display();
+    */
     
 }
+
+
+void Ekran::Network(){
+    std::vector<String> ispis = eWiFi.ispis;
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);
+    display.setCursor(0, 0);
+    display.println("WiFi scan");
+    int y=20;
+    display.setTextSize(1);
+    display.setCursor(0,y);
+
+    if(ispis.size() == 0){
+        display.setCursor(0, y);
+        display.println("Nema");
+    }
+    else{
+        for(int i = 0; i < ispis.size(); i++){
+            display.setCursor(0, y);
+            display.println(ispis[i]);
+            y += 10;
+        }
+    }
+
+    display.display();
+}
+
+
+void Ekran::BleScan(){
+    std::vector<String> ispis = eBle.ispis;
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE,SSD1306_BLACK);
+    display.setCursor(0, 0);
+    display.println("Ble scan");
+    int y=20;
+    display.setTextSize(1);
+    display.setCursor(0,y);
+
+    if(ispis.size() == 0){
+        display.setCursor(0, y);
+        display.println("Nema");
+    }
+    else{
+        for(int i = 0; i < ispis.size(); i++){
+            display.setCursor(0, y);
+            display.println(ispis[i]);
+            y += 10;
+        }
+    }
+
+
+    display.display();
+    
+}
+
+
 
 void Ekran::Game(bool moveRight, bool moveLeft){
     display.clearDisplay();
